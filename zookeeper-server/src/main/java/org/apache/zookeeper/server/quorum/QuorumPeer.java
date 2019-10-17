@@ -680,6 +680,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
                         Vote current = getCurrentVote();
                         switch (getPeerState()) {
                         case LOOKING:
+                            //目前是LeaderElection 请求处理结果
                             responseBuffer.putLong(current.getId());
                             responseBuffer.putLong(current.getZxid());
                             break;
@@ -910,6 +911,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             LOG.warn("Problem starting AdminServer", e);
             System.out.println(e);
         }
+        //cobs 开始选择主节点
         startLeaderElection();
         super.start();
     }
@@ -1155,6 +1157,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         updateThreadName();
 
         LOG.debug("Starting quorum peer");
+        //cobs jmx
         try {
             jmxQuorumBean = new QuorumBean(this);
             MBeanRegistry.getInstance().register(jmxQuorumBean, null);
@@ -1189,6 +1192,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
              */
             while (running) {
                 switch (getPeerState()) {
+                    //选举leader 过程
                 case LOOKING:
                     LOG.info("LOOKING");
 

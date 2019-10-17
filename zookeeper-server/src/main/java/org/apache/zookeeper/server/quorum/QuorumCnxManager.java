@@ -434,7 +434,9 @@ public class QuorumCnxManager {
             closeSocket(sock);
             // Otherwise proceed with the connection
         } else {
+            //发送worker
             SendWorker sw = new SendWorker(sock, sid);
+            //接受worker
             RecvWorker rw = new RecvWorker(sock, din, sid, sw);
             sw.setRecv(rw);
 
@@ -446,7 +448,7 @@ public class QuorumCnxManager {
             senderWorkerMap.put(sid, sw);
             queueSendMap.putIfAbsent(sid, new ArrayBlockingQueue<ByteBuffer>(
                     SEND_CAPACITY));
-
+            //开启发送
             sw.start();
             rw.start();
 
@@ -468,7 +470,7 @@ public class QuorumCnxManager {
         try {
             din = new DataInputStream(
                     new BufferedInputStream(sock.getInputStream()));
-
+            //处理接受到的数据
             handleConnection(sock, din);
         } catch (IOException e) {
             LOG.error("Exception handling connection, addr: {}, closing server connection",
@@ -547,6 +549,7 @@ public class QuorumCnxManager {
         // do authenticating learner
         authServer.authenticate(sock, din);
         //If wins the challenge, then close the new connection.
+        //cobs 如果获取连接的sid 小于自身id，自己作为客户端去请求 这个sid的服务
         if (sid < self.getId()) {
             /*
              * This replica might still believe that the connection to sid is
@@ -878,6 +881,7 @@ public class QuorumCnxManager {
 
         /**
          * Sleeps on accept().
+         * todo cobs 监听发送请求，开启发送的?
          */
         @Override
         public void run() {
@@ -925,6 +929,7 @@ public class QuorumCnxManager {
                             if (quorumSaslAuthEnabled) {
                                 receiveConnectionAsync(client);
                             } else {
+
                                 receiveConnection(client);
                             }
                             numRetries = 0;

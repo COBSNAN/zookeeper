@@ -112,6 +112,7 @@ public class ZooKeeperServerMain {
      * @throws IOException
      * @throws AdminServerException
      */
+    //cobs zookeeper server 启动配置
     public void runFromConfig(ServerConfig config)
             throws IOException, AdminServerException {
         LOG.info("Starting server");

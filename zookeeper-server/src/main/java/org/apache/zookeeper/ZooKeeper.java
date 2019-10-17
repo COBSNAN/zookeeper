@@ -3057,6 +3057,7 @@ public class ZooKeeper implements AutoCloseable {
         String clientCnxnSocketName = getClientConfig().getProperty(
                 ZKClientConfig.ZOOKEEPER_CLIENT_CNXN_SOCKET);
         if (clientCnxnSocketName == null) {
+            //默认连接方式
             clientCnxnSocketName = ClientCnxnSocketNIO.class.getName();
         }
         try {

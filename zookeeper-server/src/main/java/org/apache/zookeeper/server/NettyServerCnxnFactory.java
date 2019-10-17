@@ -380,6 +380,7 @@ public class NettyServerCnxnFactory extends ServerCnxnFactory {
     public void configure(InetSocketAddress addr, int maxClientCnxns, boolean secure)
             throws IOException
     {
+        //sas验证代码
         configureSaslLogin();
         localAddress = addr;
         this.maxClientCnxns = maxClientCnxns;
@@ -491,9 +492,11 @@ public class NettyServerCnxnFactory extends ServerCnxnFactory {
     @Override
     public void startup(ZooKeeperServer zks, boolean startServer)
             throws IOException, InterruptedException {
+        //启动 ServerBootstrap 服务
         start();
         setZooKeeperServer(zks);
         if (startServer) {
+            //读取数据文件
             zks.startdata();
             zks.startup();
         }

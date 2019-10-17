@@ -95,7 +95,7 @@ public class FastLeaderElection implements Election {
         int version;
 
         /*
-         * Proposed leader
+         * Proposed leader cosb sid
          */
         long leader;
 
@@ -165,7 +165,7 @@ public class FastLeaderElection implements Election {
         long zxid;
 
         /*
-         * Epoch
+         * Epoch  cobs选举中的 logicalclock 值 todo
          */
         long electionEpoch;
 
@@ -327,6 +327,7 @@ public class FastLeaderElection implements Election {
 
                             sendqueue.offer(notmsg);
                         } else {
+                            //todo cods 相当于对接受的内容做回复
                             // Receive new message
                             if (LOG.isDebugEnabled()) {
                                 LOG.debug("Receive new notification message. My id = "
@@ -378,6 +379,7 @@ public class FastLeaderElection implements Election {
                                  * Send a notification back if the peer that sent this
                                  * message is also looking and its logical clock is
                                  * lagging behind.
+                                 * //对方反应轮次小于当前轮次，提醒对方修改
                                  */
                                 if((ackstate == QuorumPeer.ServerState.LOOKING)
                                         && (n.electionEpoch < logicalclock.get())){
@@ -399,6 +401,7 @@ public class FastLeaderElection implements Election {
                                  * is looking, then send back what it believes to be the leader.
                                  */
                                 Vote current = self.getCurrentVote();
+                                //如果对方还是looking 状态，而直接不是looking 状态，立即告诉对方当前选举情况
                                 if(ackstate == QuorumPeer.ServerState.LOOKING){
                                     if(LOG.isDebugEnabled()){
                                         LOG.debug("Sending new notification. My id ={} recipient={} zxid=0x{} leader={} config version = {}",
@@ -858,6 +861,7 @@ public class FastLeaderElection implements Election {
      * changes its state to LOOKING, this method is invoked, and it
      * sends notifications to all other peers.
      */
+    //cobs 寻找leader过程
     public Vote lookForLeader() throws InterruptedException {
         try {
             self.jmxLeaderElectionBean = new LeaderElectionBean();
@@ -925,10 +929,13 @@ public class FastLeaderElection implements Election {
                      */
                     switch (n.state) {
                     case LOOKING:
+                        // 选举 logicalclock 相当于 epoch 每轮提案编号
                         // If notification > current, replace and send messages out
                         if (n.electionEpoch > logicalclock.get()) {
+                            //cobs 这里的含义就起到了一个快速 跟换选举提案编号的作用
                             logicalclock.set(n.electionEpoch);
                             recvset.clear();
+                            //todo cods 判断是否需要变更投票
                             if(totalOrderPredicate(n.leader, n.zxid, n.peerEpoch,
                                     getInitId(), getInitLastLoggedZxid(), getPeerEpoch())) {
                                 updateProposal(n.leader, n.zxid, n.peerEpoch);
@@ -960,12 +967,13 @@ public class FastLeaderElection implements Election {
 
                         // don't care about the version if it's in LOOKING state
                         recvset.put(n.sid, new Vote(n.leader, n.zxid, n.electionEpoch, n.peerEpoch));
-
+                        //cobs验证是否超过半数统一
                         if (termPredicate(recvset,
                                 new Vote(proposedLeader, proposedZxid,
                                         logicalclock.get(), proposedEpoch))) {
 
                             // Verify if there is any change in the proposed leader
+                            //todo cobs 等待了finalizeWait 如果这个时候还没有反对者，默认放下走，有需要重新构建
                             while((n = recvqueue.poll(finalizeWait,
                                     TimeUnit.MILLISECONDS)) != null){
                                 if(totalOrderPredicate(n.leader, n.zxid, n.peerEpoch,

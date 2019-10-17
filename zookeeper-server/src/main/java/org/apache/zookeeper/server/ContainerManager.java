@@ -109,6 +109,7 @@ public class ContainerManager {
     public void checkContainers()
             throws InterruptedException {
         long minIntervalMs = getMinIntervalMs();
+        //cobs 获取过期节点 删除 ？？ 不清楚
         for (String containerPath : getCandidates()) {
             long startMs = Time.currentElapsedTime();
 

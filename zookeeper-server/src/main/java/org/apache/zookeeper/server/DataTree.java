@@ -224,6 +224,7 @@ public class DataTree {
     private final DataNode quotaDataNode = new DataNode(new byte[0], -1L, new StatPersisted());
 
     public DataTree() {
+        //默认创建 zookeeper路径
         /* Rather than fight it, let root have an alias */
         nodes.put("", root);
         nodes.put(rootZookeeper, root);

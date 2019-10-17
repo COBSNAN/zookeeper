@@ -400,6 +400,7 @@ public class Leader {
 
                         BufferedInputStream is = new BufferedInputStream(
                                 s.getInputStream());
+                        //监听follower 和 Observer 请求，建立连接
                         LearnerHandler fh = new LearnerHandler(s, is, Leader.this);
                         fh.start();
                     } catch (SocketException e) {
@@ -540,6 +541,7 @@ public class Leader {
              self.setCurrentEpoch(epoch);    
             
              try {
+                 //监听 对newLeader 的ack 统一，超过半数可以往下走
                  waitForNewLeaderAck(self.getId(), zk.getZxid());
              } catch (InterruptedException e) {
                  shutdown("Waiting for a quorum of followers, only synced with sids: [ "
@@ -644,7 +646,7 @@ public class Leader {
                         shutdownMessage = "Unexpected internal error";
                         break;
                     }
-
+                    //监听是否超过恢复半数
                     if (!tickSkip && !syncedAckSet.hasAllQuorums()) {
                         // Lost quorum of last committed and/or last proposed
                         // config, set shutdown flag
@@ -1330,6 +1332,8 @@ public class Leader {
     /**
      * Process NEWLEADER ack of a given sid and wait until the leader receives
      * sufficient acks.
+     *
+     * todo cobs LearnerHander 会监听learner 读取ack信息，添加到队列
      *
      * @param sid
      * @throws InterruptedException

@@ -90,7 +90,8 @@ public class Vote {
     final private long zxid;
     
     final private long electionEpoch;
-    
+
+    //类似于zxid 是当前机器epoch文件记录的id
     final private long peerEpoch;
     
     public int getVersion() {
